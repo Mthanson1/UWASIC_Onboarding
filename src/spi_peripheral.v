@@ -12,6 +12,7 @@ module spi_peripheral (
 );
 
 wire sync_COPI, sync_SCLK, sync_nCS, nCS_rise, nCS_fall;
+wire [3:0] _unused;
 reg [7:0] packet;
 
 sync_chain stable_COPI( //synch chain to stabilize COPI input
@@ -19,17 +20,17 @@ sync_chain stable_COPI( //synch chain to stabilize COPI input
     .async_in(COPI), 
     .sync_out(sync_COPI),
     .rst_n(rst_n),
-    .edge_rise(1'bz),
-    .edge_fall(1'bz)
+    .edge_rise(_unused[0]),
+    .edge_fall(_unused[1])
 );
 
 sync_chain stable_SCLK( //synch chain to stabilize SCLK input 
     .clk(clk),
     .async_in(SCLK),
-    .sync_out(1'bz),
+    .sync_out(_unused[2]),
     .rst_n(rst_n),
     .edge_rise(sync_SCLK),
-    .edge_fall(1'bz)
+    .edge_fall(_unused[3])
 );
 
 sync_chain stable_nCS( //synch chain to stabilize nCS input
@@ -103,9 +104,10 @@ always @(posedge clk or negedge rst_n) begin
             4'd2: en_reg_pwm_7_0 <= data;
             4'd3: en_reg_pwm_15_8 <= data;
             4'd4: pwm_duty_cycle <= data;
-            default: 
+            default: transaction_count <= 0;
         endcase
         transaction_count <= 0;
+        transaction_processed <= 1'b1;
 
     end else if (!transaction_ready && transaction_processed) begin 
         
