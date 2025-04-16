@@ -130,9 +130,9 @@ reg [STAGES-1:0] sync_ff;
 
 integer i;
 
-always @(posedge clk or negedge rst) begin
+always @(posedge clk or negedge rst_n) begin
     if (~rst_n) sync_ff <= {STAGES{1'b0}};
-    else if begin
+    else begin
         sync_ff[0] <= async_in;
         for (i = 1; i < STAGES; i = i + 1) begin
             sync_ff[i] <= sync_chain[i-1];
