@@ -42,12 +42,12 @@ sync_chain stable_nCS( //synch chain to stabilize nCS input
     .edge_fall(nCS_fall)
 );
 
-shift_reg8 input_buffer(
-    .clk(sync_SCLK),
-    .data_in(sync_COPI),
-    .rst_n(rst_n & sync_nCS),
-    .data_out(packet)
-);
+always (posedge clk or negedge rst_n) begin
+    if(~rst_n) packet <= 0;
+    else if (~sync_nCS) begin
+        if (sync_SCLK) packet <= {packet[6:0], sync_COPI};
+    end
+end
 
 reg transaction_ready, transaction_processed;
 integer clk_count, transaction_count;
@@ -149,17 +149,5 @@ assign edge_rise = sync_ff[STAGES-1] & ~sync_ff[STAGES-2];
 assign edge_fall = ~sync_ff[STAGES-1] & sync_ff[STAGES-2];
 
 endmodule
-
-module shift_reg8 (
-    input wire data_in,
-    input wire clk,
-    input wire rst_n,
-    output reg [7:0] data_out
-);
-
-always @(posedge clk or negedge rst_n) begin
-    if (~rst_n) data_out <= 8'b0;
-    else data_out <= {data_out[6:0], data_in};
-end
 
 endmodule
