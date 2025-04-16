@@ -44,13 +44,12 @@ sync_chain stable_nCS( //synch chain to stabilize nCS input
 
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) packet <= 0;
-    else if (~sync_nCS) begin
-        if (sync_SCLK) packet <= {packet[6:0], sync_COPI};
-    end
+    else if (~sync_nCS && sync_SCLK) packet <= {packet[6:0], sync_COPI};
 end
 
 reg transaction_ready, transaction_processed;
-integer clk_count, transaction_count;
+reg [3:0] clk_count;
+reg [1:0] transaction_count;
 wire address_decoded = packet[7] & ~|packet[6:4] & (packet[3:0] < 5);
 reg [3:0] address;
 reg [7:0] data;
@@ -59,34 +58,42 @@ reg [7:0] data;
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin //reset peripheral
 
+        clk_count <= 1'b0;
+        transaction_count <= 1'b0;
         transaction_ready <= 1'b0;
 
     end else if (sync_nCS == 1'b0) begin //nCS is low so start counting clock cycles.
         
-        if(nCS_fall) clk_count <= 0;
+        if(nCS_fall) begin 
+            clk_count <= 0;
+            transaction_count <= 0;
+        end
         if(sync_SCLK) clk_count <= clk_count + 1;
 
     end else begin //nCS high so transfer should be complete
        
         if (nCS_rise && (clk_count == 8)) begin //if correct number of clock cycles has elapsed.
             
-            if(transaction_count == 1) begin // if address has already been read
-                transaction_count <= transaction_count + 1;
-                data <= packet;
-            end else if(address_decoded) begin 
-                transaction_count <= 1;
-                address <= packet[3:0];
-            end
+            case(transaction_count == 1) 
+                2'd0: begin // if address has already been read
+                    if (address_decoded) begin
+                        address <= packet[3:0];
+                        transaction_count <= 2'd1;
+                    end
+                end
+                2'd1: begin
+                    data <= packet;
+                    transaction_count <= 2'd2;
+                    transaction_ready <= 1'b1;
+                end
+                default: transaction_ready <= 1'd0;
+            endcase
 
+        end 
 
-            if(transaction_count == 2) transaction_ready <= 1'b1; //both data and address properly read.
-
-        end else if (transaction_processed) begin
-
+        if (transaction_processed) begin
             transaction_ready <= 1'b0; //clear ready flag
-
         end
-
     end
 end
 
@@ -104,14 +111,14 @@ always @(posedge clk or negedge rst_n) begin
             4'd2: en_reg_pwm_7_0 <= data;
             4'd3: en_reg_pwm_15_8 <= data;
             4'd4: pwm_duty_cycle <= data;
-            default: transaction_count <= 0;
+            default: ;
         endcase
-        transaction_count <= 0;
+
+        transaction_count <= 2'b0;
         transaction_processed <= 1'b1;
 
     end else if (!transaction_ready && transaction_processed) begin 
         
-        transaction_count <= 0;
         transaction_processed <= 1'b0; // clear processed flag when read is cleared
 
     end
