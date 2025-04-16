@@ -36,6 +36,18 @@ module tt_um_uwasic_mhansonSPI (
     .out({uio_out, uo_out})
   );
 
+  spi_peripheral spi_peripheral_inst (
+    .clk(clk),
+    .rst_n(rst_n),
+    .en_reg_out_7_0(en_reg_out_7_0),
+    .en_reg_out_15_8(en_reg_out_15_8),
+    .en_reg_pwm_7_0(en_reg_pwm_7_0),
+    .en_reg_pwm_15_8(en_reg_pwm_15_8),
+    .pwm_duty_cycle(pwm_duty_cycle),
+    .SCLK(ui_in[0]),
+    .COPI(ui_in[1]),
+    .nCS(ui_in[2]) 
+  );
   // All output pins must be assigned. If not used, assign to 0.
 
   // List all unused inputs to prevent warnings

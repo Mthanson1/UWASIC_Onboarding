@@ -8,7 +8,7 @@ module spi_peripheral (
     output reg [7:0] en_reg_out_15_8,
     output reg [7:0] en_reg_pwm_7_0,
     output reg [7:0] en_reg_pwm_15_8,
-    output reg [7:0] pwm_duty_cycle,
+    output reg [7:0] pwm_duty_cycle
 );
 
 wire sync_COPI, sync_SCLK, sync_nCS, nCS_rise, nCS_fall, _unused;
@@ -36,6 +36,7 @@ sync_chain stable_nCS( //synch chain to stabilize nCS input
     .clk(clk),
     .async_in(nCS),
     .sync_out(sync_nCS),
+    .rst_n(rst_n),
     .edge_rise(nCS_rise),
     .edge_fall(nCS_fall)
 );
@@ -123,7 +124,7 @@ module sync_chain #(
     input wire rst_n,
     output wire sync_out,
     output wire edge_rise,
-    output wire edge_fall,
+    output wire edge_fall
 );
 
 reg [STAGES-1:0] sync_ff;
