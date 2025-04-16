@@ -137,6 +137,7 @@ always @(posedge clk or negedge rst) begin
         for (i = 1; i < STAGES; i = i + 1) begin
             sync_ff[i] <= sync_chain[i-1];
         end 
+    end
 end 
 
 assign sync_out = sync_ff[STAGES-1];
