@@ -11,7 +11,7 @@ module spi_peripheral (
     output reg [7:0] pwm_duty_cycle
 );
 
-wire sync_COPI, sync_SCLK, sync_nCS, nCS_rise, nCS_fall, _unused;
+wire sync_COPI, sync_SCLK, sync_nCS, nCS_rise, nCS_fall;
 reg [7:0] packet;
 
 sync_chain stable_COPI( //synch chain to stabilize COPI input
@@ -19,17 +19,17 @@ sync_chain stable_COPI( //synch chain to stabilize COPI input
     .async_in(COPI), 
     .sync_out(sync_COPI),
     .rst_n(rst_n),
-    .edge_rise(_unused),
-    .edge_fall(_unused)
+    .edge_rise(1'bz),
+    .edge_fall(1'bz)
 );
 
 sync_chain stable_SCLK( //synch chain to stabilize SCLK input 
     .clk(clk),
     .async_in(SCLK),
-    .sync_out(_unused),
+    .sync_out(1'bz),
     .rst_n(rst_n),
     .edge_rise(sync_SCLK),
-    .edge_fall(_unused)
+    .edge_fall(1'bz)
 );
 
 sync_chain stable_nCS( //synch chain to stabilize nCS input
@@ -62,18 +62,18 @@ always @(posedge clk or negedge rst_n) begin
 
     end else if (sync_nCS == 1'b0) begin //nCS is low so start counting clock cycles.
         
-        if(nCS_fall) clk_count = 0;
-        if(sync_SCLK) clk_count = clk_count + 1;
+        if(nCS_fall) clk_count <= 0;
+        if(sync_SCLK) clk_count <= clk_count + 1;
 
     end else begin //nCS high so transfer should be complete
        
         if (nCS_rise && (clk_count == 8)) begin //if correct number of clock cycles has elapsed.
             
             if(transaction_count == 1) begin // if address has already been read
-                transaction_count = transaction_count + 1;
+                transaction_count <= transaction_count + 1;
                 data <= packet;
             end else if(address_decoded) begin 
-                transaction_count = 1;
+                transaction_count <= 1;
                 address <= packet[3:0];
             end
 
@@ -103,12 +103,13 @@ always @(posedge clk or negedge rst_n) begin
             4'd2: en_reg_pwm_7_0 <= data;
             4'd3: en_reg_pwm_15_8 <= data;
             4'd4: pwm_duty_cycle <= data;
+            default: 
         endcase
-        transaction_count = 0;
+        transaction_count <= 0;
 
     end else if (!transaction_ready && transaction_processed) begin 
         
-        transaction_count = 0;
+        transaction_count <= 0;
         transaction_processed <= 1'b0; // clear processed flag when read is cleared
 
     end
@@ -153,9 +154,6 @@ module shift_reg8 (
     input wire rst_n,
     output reg [7:0] data_out
 );
-
-reg [7:0] parallel_ff;
-integer i;
 
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) data_out <= 8'b0;
