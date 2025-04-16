@@ -149,5 +149,3 @@ assign edge_rise = sync_ff[STAGES-1] & ~sync_ff[STAGES-2];
 assign edge_fall = ~sync_ff[STAGES-1] & sync_ff[STAGES-2];
 
 endmodule
-
-endmodule
