@@ -58,15 +58,15 @@ reg [7:0] data;
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin //reset peripheral
 
-        clk_count <= 1'b0;
-        transaction_count <= 1'b0;
+        clk_count <= 4'b0;
+        transaction_count <= 2'b0;
         transaction_ready <= 1'b0;
 
     end else if (sync_nCS == 1'b0) begin //nCS is low so start counting clock cycles.
         
         if(nCS_fall) begin 
-            clk_count <= 0;
-            transaction_count <= 0;
+            clk_count <= 4'd0;
+            transaction_count <= 2'd0;
         end
         if(sync_SCLK) clk_count <= clk_count + 1;
 
@@ -74,7 +74,7 @@ always @(posedge clk or negedge rst_n) begin
        
         if (nCS_rise && (clk_count == 8)) begin //if correct number of clock cycles has elapsed.
             
-            case(transaction_count == 1) 
+            case(transaction_count) 
                 2'd0: begin // if address has already been read
                     if (address_decoded) begin
                         address <= packet[3:0];
