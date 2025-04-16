@@ -154,7 +154,7 @@ module shift_reg8 (
 );
 
 reg [7:0] parallel_ff;
-integer i
+integer i;
 
 always @(posedge clk or negedge rst_n) begin
     if (~rst_n) data_out <= 8'b0;
