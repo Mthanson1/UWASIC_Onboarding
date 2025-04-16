@@ -42,7 +42,7 @@ sync_chain stable_nCS( //synch chain to stabilize nCS input
     .edge_fall(nCS_fall)
 );
 
-always (posedge clk or negedge rst_n) begin
+always @(posedge clk or negedge rst_n) begin
     if(~rst_n) packet <= 0;
     else if (~sync_nCS) begin
         if (sync_SCLK) packet <= {packet[6:0], sync_COPI};
