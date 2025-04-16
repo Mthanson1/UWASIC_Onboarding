@@ -116,7 +116,7 @@ end
 endmodule
 
 module sync_chain #(
-    parameter STAGES = 3; //MUST BE >= 3
+    parameter STAGES = 3 //MUST BE >= 3
 ) (
     input wire clk,
     input wire async_in,
