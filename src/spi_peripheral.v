@@ -136,7 +136,7 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         sync_ff[0] <= async_in;
         for (i = 1; i < STAGES; i = i + 1) begin
-            sync_ff[i] <= sync_chain[i-1];
+            sync_ff[i] <= sync_ff[i-1];
         end 
     end
 end 
