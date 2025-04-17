@@ -36,7 +36,7 @@ module tt_um_uwasic_mhansonSPI (
     .out({uio_out, uo_out})
   );
 
-  (* keep_hierarchy = "yes" *) spi_peripheral spi_peripheral_inst (
+  spi_peripheral spi_peripheral_inst (
     .clk(clk),
     .rst_n(rst_n),
     .en_reg_out_7_0(en_reg_out_7_0),
