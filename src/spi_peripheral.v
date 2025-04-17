@@ -1,3 +1,5 @@
+`default_nettype none
+
 module spi_peripheral (
     input wire COPI,
     input wire SCLK,
@@ -11,7 +13,7 @@ module spi_peripheral (
     output reg [7:0] pwm_duty_cycle
 );
 
-wire sync_COPI, sync_SCLK, sync_nCS, nCS_rise, nCS_fall;
+wire sync_COPI, SCLK_rise, sync_nCS, nCS_rise, nCS_fall;
 wire [3:0] _unused;
 reg [7:0] packet;
 
@@ -29,7 +31,7 @@ sync_chain stable_SCLK( //synch chain to stabilize SCLK input
     .async_in(SCLK),
     .sync_out(_unused[2]),
     .rst_n(rst_n),
-    .edge_rise(sync_SCLK),
+    .edge_rise(SCLK_rise),
     .edge_fall(_unused[3])
 );
 
@@ -44,7 +46,7 @@ sync_chain stable_nCS( //synch chain to stabilize nCS input
 
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) packet <= 0;
-    else if (~sync_nCS && sync_SCLK) packet <= {packet[6:0], sync_COPI};
+    else if (~sync_nCS && SCLK_rise) packet <= {packet[6:0], sync_COPI};
 end
 
 reg transaction_ready, transaction_processed;
@@ -68,7 +70,7 @@ always @(posedge clk or negedge rst_n) begin
             clk_count <= 4'd0;
             transaction_count <= 2'd0;
         end
-        if(sync_SCLK) clk_count <= clk_count + 1;
+        if(SCLK_rise) clk_count <= clk_count + 1;
 
     end else begin //nCS high so transfer should be complete
        
