@@ -13,7 +13,7 @@ module spi_peripheral (
     output reg [7:0] pwm_duty_cycle
 );
 
-reg[2:0] sync_COPI, sync_SCLK, sync_nCS;
+reg [2:0] sync_COPI, sync_SCLK, sync_nCS;
 
 always @(posedge clk or negedge rst_n) begin //3 dff synchronization chain for external input
     if(~rst_n) begin
@@ -49,19 +49,19 @@ always @(posedge clk or negedge rst_n) begin
         transaction_ready <= 1'b0;
         packet <= 15'b0;
 
-    end else if (sync_nCS[2] == 1'b0) begin //nCS is low so start counting clock cycles.
+    end else if (sync_nCS[1] == 1'b0) begin //nCS is low so start counting clock cycles.
         
         if(nCS_fall) clk_count <= 4'd0;
         if(SCLK_rise) begin
             clk_count <= clk_count + 1;
-            packet <= {packet[14:0], sync_COPI[2]};
+            packet <= {packet[14:0], sync_COPI[2]};//maybe consider switching to sync_COPI[1];
         end
 
     end else begin //nCS high so transfer should be complete
        
         if (nCS_rise) begin //if correct number of clock cycles has elapsed.
             
-            if (address_decoded) begin //&& (clk_count == 16)
+            if (address_decoded && (clk_count == 16)) begin
                 data <= packet[7:0];
                 address <= packet[11:8];
                 transaction_ready <= 1'b1;
