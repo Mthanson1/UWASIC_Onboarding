@@ -45,13 +45,13 @@ reg [7:0] data;
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin //reset peripheral
 
-        clk_count <= 4'b0;
+        clk_count <= 5'b0;
         transaction_ready <= 1'b0;
-        packet <= 15'b0;
+        packet <= 16'b0;
 
     end else if (sync_nCS[1] == 1'b0) begin //nCS is low so start counting clock cycles.
         
-        if(nCS_fall) clk_count <= 4'd0;
+        if(nCS_fall) clk_count <= 5'd0;
         if(SCLK_rise) begin
             clk_count <= clk_count + 1;
             packet <= {packet[14:0], sync_COPI[2]};//maybe consider switching to sync_COPI[1];
